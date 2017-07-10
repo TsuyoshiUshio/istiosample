@@ -1,0 +1,18 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: web-service
+    spec:
+      containers:
+        - name: web-service
+          image: kube16.azurecr.io/websample:2.0.0
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: kb16acrsecret

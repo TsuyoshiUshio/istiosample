@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  labels:
+    app: web-service
+spec:
+  selector:
+    app: web-service
+  ports:
+    - port: 80
+      name: http
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: web-deployment-v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-service
+        version: 1.0.0
+    spec:
+      containers:
+        - name: web-service
+          image: kube16.azurecr.io/websample:1.0.6
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: kb16acrsecret
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: web-deployment-v2
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-service
+        version: 2.0.0
+    spec:
+      containers:
+        - name: web-service
+          image: kube16.azurecr.io/websample:2.0.6
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: kb16acrsecret
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: webservice-ingress
+  annotations:
+    kubernetes.io/ingress.class: istio
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /web/.*
+        backend:
+          serviceName: web-service
+          servicePort: 80
+      - path: /auth/.*
+        backend:
+          serviceName: web-service
+          servicePort: 80     

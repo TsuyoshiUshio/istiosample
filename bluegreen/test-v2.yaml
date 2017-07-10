@@ -1,0 +1,12 @@
+type: route-rule
+name: web-service-test-v2
+spec:
+  destination: web-service.default.svc.cluster.local
+  precedence: 2
+  match:
+    httpHeaders:
+      cookie:
+        regex: "^(.*?;)?(name=v2tester)(;.*)?$"
+  route:
+  - tags:
+      version: 2.0.0

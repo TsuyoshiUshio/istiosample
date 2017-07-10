@@ -1,0 +1,10 @@
+type: route-rule
+name: web-service-default
+namespace: default
+spec:
+  destination: web-service.default.svc.cluster.local
+  precedence: 1
+  route:
+  - tags:
+      version: 2.0.0
+    weight: 100
