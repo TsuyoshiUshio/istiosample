@@ -15,6 +15,7 @@
 #   limitations under the License.
 
 require 'webrick'
+require 'net/http'
 
 if ARGV.length < 1 then
     puts "usage: #{$PROGRAM_NAME} port"
@@ -26,17 +27,6 @@ port = Integer(ARGV[0])
 server = WEBrick::HTTPServer.new :BindAddress => '0.0.0.0', :Port => port
 
 trap 'INT' do server.shutdown end
-
-index = '
-<html>
-<head>
-    <title>Blue Version 1.0.0</title>
-</head>
-<body bgcolor="#0000FF">
-    <H1>This is Blue Version 1.0.0</H1>
-</body>
-</html>
-'
 
 login = '
 <html>
@@ -64,8 +54,27 @@ logout = '
 '
 
 server.mount_proc '/webpage' do |req, res|
+    uri = URI.parse(ENV["SERVICE_URL"])
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+
+    puts("---------transfar cookie")
+    puts(req.cookies)
+    cookies = {}
+    req.cookies.each{|cookie|
+        cookies[cookie.name] = cookie.value
+        puts(cookie.name + "=" + cookie.value)
+    }
+    request['Cookie'] = cookies.map{|k,v|
+        "#{k}=#{v}"
+    }.join(';')
+    puts "Cookie:" + request['Cookie']
+    puts "-----end "
+
+    response = http.request(request)
+    res.body = response.body
+
     res.status = 200
-    res.body = index
     res['Content-Type'] = 'text/html'
 end
 

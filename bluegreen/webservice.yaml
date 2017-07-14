@@ -51,6 +51,42 @@ spec:
       imagePullSecrets:
         - name: kb16acrsecret
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-front
+  labels:
+    app: web-front
+spec:
+  selector:
+    app: web-front
+  ports:
+    - port: 80
+      name: http
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: web-front
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-front
+        version: 1.0.0
+    spec:
+      containers:
+        - name: web-front
+          image: kube16.azurecr.io/webfront:1.0.3
+          env:
+          - name: SERVICE_URL
+            value: "http://web-service"
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: kb16acrsecret
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -61,11 +97,6 @@ spec:
   rules:
   - http:
       paths:
-      - path: /web/.*
-        backend:
-          serviceName: web-service
-          servicePort: 80
-      - path: /auth/.*
-        backend:
-          serviceName: web-service
-          servicePort: 80     
+      - backend:
+          serviceName: web-front
+          servicePort: 80 
